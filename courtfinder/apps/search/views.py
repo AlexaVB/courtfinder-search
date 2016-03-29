@@ -164,6 +164,7 @@ def results(request):
                 return redirect('search:search')
 
 
+@normalise_aol
 def results_json(request):
     aol = request.GET.get('aol', 'all')
     spoe = request.GET.get('spoe', 'start')
