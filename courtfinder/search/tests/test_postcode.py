@@ -51,6 +51,7 @@ class PostcodeTestCase(TestCase):
     def _get_from_mapit_mock( self, url, headers ):
         mock_response = mock.Mock()
         mock_response.status_code = 200
+        mock_response.headers = {}
 
         if url.endswith('SE15'):
             mock_response.json.return_value =  PostcodeTestCase.mock_mapit_partial
@@ -91,3 +92,17 @@ class PostcodeTestCase(TestCase):
     def test_nowhere_postcode(self):
         with self.assertRaises(CourtSearchInvalidPostcode):
             p = Postcode(self.nowhere_postcode)
+
+    def test_get_usage(self):
+        p = Postcode(self.partial_postcode)
+
+        tests = [
+            {'current': 10, 'limit': 50, 'percent': 20},
+            {'current': None, 'limit': 50, 'percent': None},
+            {'current': 10, 'limit': None, 'percent': None},
+            {'current': "invalid", 'limit': 50, 'percent': None},
+            {'current': 10, 'limit': 0, 'percent': None},
+        ]
+        for test in tests:
+            headers = {'X-Quota-Current': test['current'], 'X-Quota-Limit': test['limit']}
+            self.assertEquals(p.get_usage(headers), test)
